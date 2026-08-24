@@ -24,6 +24,11 @@ function db(): PDO {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false
     ]);
+    
+    // Automatically run database migrations if tables are missing
+    require_once __DIR__ . '/migrate.php';
+    run_migrations($pdo);
+    
     return $pdo;
 }
 function e(?string $value): string { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
