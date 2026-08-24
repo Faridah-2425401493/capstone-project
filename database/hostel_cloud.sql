@@ -1,0 +1,138 @@
+CREATE DATABASE IF NOT EXISTS hostel_cloud CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE hostel_cloud;
+
+CREATE TABLE users (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(120) NOT NULL,
+ email VARCHAR(190) NOT NULL UNIQUE,
+ student_id_number VARCHAR(100) NULL,
+ program_offering VARCHAR(255) NULL,
+ phone VARCHAR(30) NULL,
+ password VARCHAR(255) NOT NULL,
+ role ENUM('student','hostel_admin','system_admin') NOT NULL DEFAULT 'student',
+ is_suspended BOOLEAN NOT NULL DEFAULT 0,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE hostels (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ admin_id BIGINT UNSIGNED NOT NULL,
+ name VARCHAR(180) NOT NULL,
+ location VARCHAR(255) NOT NULL,
+ description TEXT NULL,
+ total_floors INT UNSIGNED NOT NULL DEFAULT 1,
+ contact_phone VARCHAR(30) NULL,
+ image_path VARCHAR(500) NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ CONSTRAINT fk_hostel_admin FOREIGN KEY(admin_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rooms (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ hostel_id BIGINT UNSIGNED NOT NULL,
+ room_number VARCHAR(60) NOT NULL,
+ floor_number INT UNSIGNED NOT NULL DEFAULT 1,
+ equipment TEXT NULL,
+ gender ENUM('male','female','any') NOT NULL DEFAULT 'any',
+ capacity INT UNSIGNED NOT NULL DEFAULT 1,
+ occupied INT UNSIGNED NOT NULL DEFAULT 0,
+ price DECIMAL(10,2) NOT NULL,
+ description TEXT NULL,
+ image_path VARCHAR(500) NULL,
+ status ENUM('available','maintenance','inactive') NOT NULL DEFAULT 'available',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ UNIQUE(hostel_id, room_number),
+ INDEX idx_rooms_search(hostel_id, gender, status),
+ CONSTRAINT fk_room_hostel FOREIGN KEY(hostel_id) REFERENCES hostels(id) ON DELETE CASCADE
+);
+
+CREATE TABLE bookings (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ student_id BIGINT UNSIGNED NOT NULL,
+ room_id BIGINT UNSIGNED NOT NULL,
+ status ENUM('pending','approved','paid','checked_in','checked_out','rejected','cancelled') NOT NULL DEFAULT 'pending',
+ roommate_request VARCHAR(255) NULL,
+ note TEXT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ INDEX idx_booking_student(student_id, status),
+ INDEX idx_booking_room(room_id, status),
+ CONSTRAINT fk_booking_student FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE,
+ CONSTRAINT fk_booking_room FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE
+);
+
+CREATE TABLE documents (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ original_name VARCHAR(255) NOT NULL,
+ storage_path VARCHAR(500) NOT NULL,
+ mime_type VARCHAR(120) NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ CONSTRAINT fk_document_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE payments (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ booking_id BIGINT UNSIGNED NOT NULL,
+ amount DECIMAL(10,2) NOT NULL,
+ reference VARCHAR(120) NOT NULL UNIQUE,
+ status ENUM('pending','success','failed') NOT NULL DEFAULT 'pending',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ CONSTRAINT fk_payment_booking FOREIGN KEY(booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
+CREATE TABLE password_resets (
+ email VARCHAR(190) NOT NULL,
+ token VARCHAR(255) NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ INDEX idx_password_resets_email(email)
+);
+
+CREATE TABLE reviews (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ hostel_id BIGINT UNSIGNED NOT NULL,
+ student_id BIGINT UNSIGNED NOT NULL,
+ rating TINYINT UNSIGNED NOT NULL CHECK (rating BETWEEN 1 AND 5),
+ comment TEXT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ CONSTRAINT fk_review_hostel FOREIGN KEY(hostel_id) REFERENCES hostels(id) ON DELETE CASCADE,
+ CONSTRAINT fk_review_student FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE maintenance_tickets (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ hostel_id BIGINT UNSIGNED NOT NULL,
+ room_id BIGINT UNSIGNED NOT NULL,
+ student_id BIGINT UNSIGNED NOT NULL,
+ issue TEXT NOT NULL,
+ status ENUM('open','in_progress','resolved') NOT NULL DEFAULT 'open',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ CONSTRAINT fk_ticket_hostel FOREIGN KEY(hostel_id) REFERENCES hostels(id) ON DELETE CASCADE,
+ CONSTRAINT fk_ticket_room FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+ CONSTRAINT fk_ticket_student FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE wishlists (
+ student_id BIGINT UNSIGNED NOT NULL,
+ hostel_id BIGINT UNSIGNED NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY(student_id, hostel_id),
+ CONSTRAINT fk_wishlist_student FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE,
+ CONSTRAINT fk_wishlist_hostel FOREIGN KEY(hostel_id) REFERENCES hostels(id) ON DELETE CASCADE
+);
+
+CREATE TABLE coupons (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ hostel_id BIGINT UNSIGNED NOT NULL,
+ code VARCHAR(30) NOT NULL,
+ discount_percent INT UNSIGNED NOT NULL CHECK (discount_percent BETWEEN 1 AND 100),
+ valid_until DATE NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ UNIQUE(hostel_id, code),
+ CONSTRAINT fk_coupon_hostel FOREIGN KEY(hostel_id) REFERENCES hostels(id) ON DELETE CASCADE
+);

@@ -1,0 +1,123 @@
+<?php require_once __DIR__.'/../src/bootstrap.php'; if(current_user()) redirect('dashboard.php');
+if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$s=db()->prepare('SELECT * FROM users WHERE email=?');$s->execute([strtolower(trim($_POST['email']??''))]);$u=$s->fetch();
+if($u&&password_verify($_POST['password']??'',$u['password'])){session_regenerate_id(true);$_SESSION['user_id']=$u['id'];log_event('login',['user_id'=>$u['id']]);
+    if($u['role']==='student'){
+        $check = db()->prepare('SELECT id FROM bookings WHERE student_id=? LIMIT 1');
+        $check->execute([$u['id']]);
+        if(!$check->fetch()) redirect('hostels.php');
+    }
+    redirect('dashboard.php');
+}flash('error','Invalid email or password.');}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | HostelCloud</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .form-width { width: 80%; }
+        @media (max-width: 576px) { .form-width { width: 100% !important; } }
+        .bg-side {
+            background-image: url('https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .bg-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .brand-color { background-color: rgba(41, 42, 102, 1); color: white; border: none; }
+        .brand-color:hover { background-color: rgba(30, 31, 80, 1); color: white; }
+        .text-brand { color: rgba(41, 42, 102, 1); }
+    </style>
+</head>
+<body>
+    <section style="width: 100vw; height: 100vh; position: relative;">
+        <!-- Close Button -->
+        <div class="p-3" style="position: absolute; top: 0; right: 0; z-index: 10;">
+            <a class="fw-lighter fs-4 text-dark" href="<?=url()?>"><i class="fas fa-times"></i></a>
+        </div>
+        
+        <div class="row m-0" style="width: 100%; height: 100%;">
+            <!-- Left Side Image -->
+            <div class="col-5 d-none d-md-block p-0 bg-side">
+                <div class="bg-overlay"></div>
+            </div>
+            
+            <!-- Right Side Form -->
+            <div class="col p-0 d-flex flex-column align-items-center justify-content-between" style="height: 100vh;">
+                <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 py-5">
+                    
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center brand-color mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                                <i class="fas fa-building"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-light" style="letter-spacing: 5px; color: black;">HOSTELCLOUD</h4>
+                        <h6 class="fw-light text-dark mt-2" style="letter-spacing: 1px;">Log into your account.</h6>
+                    </div>
+                    
+                    <div class="px-3 px-md-5 mt-4 form-width">
+                        <?php if($m=flash('success')): ?><div class="alert alert-success"><?=e($m)?></div><?php endif;?>
+                        <?php if($m=flash('error')): ?><div class="alert alert-danger"><?=e($m)?></div><?php endif;?>
+                        
+                        <form method="post" style="font-size: 15px;">
+                            <input type="hidden" name="csrf" value="<?=csrf()?>">
+                            <div class="mb-3">
+                                <label class="form-label text-dark" for="email">Email</label>
+                                <input class="form-control py-2" id="email" type="email" name="email" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-dark" for="password">Password</label>
+                                <div class="input-group">
+                                    <input class="form-control py-2" id="password" type="password" name="password" required>
+                                    <span class="input-group-text bg-white" onclick="togglePassword()" style="cursor: pointer;">
+                                        <i id="eye" class="far fa-eye-slash"></i>
+                                    </span>
+                                </div>
+                                <div class="mt-2 text-start">
+                                    <small style="font-size: 12px;"><a href="#" class="text-brand text-decoration-none">Forgot Password?</a></small>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn brand-color px-4 py-2">Log in</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="d-flex flex-column align-items-center justify-content-center w-100 pb-4">
+                    <h6 class="fw-light text-dark mb-3">No account? <a href="<?=url('register.php')?>" class="fw-bold text-brand text-decoration-none">Create one.</a></h6>
+                    <small class="text-dark text-center px-4" style="font-size: 0.75rem; letter-spacing: 1px;">
+                        Clicking "Log in" means you agree to HostelCloud's <a href="#" class="text-dark">Terms of Service</a> and acknowledge our <a href="#" class="text-dark">Privacy Policy</a>.
+                    </small>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        function togglePassword(){
+            const field = document.getElementById('password');
+            const eye = document.getElementById('eye');
+            if (field.type === 'password') {
+                field.type = 'text';
+                eye.className = 'far fa-eye';
+            } else {
+                field.type = 'password';
+                eye.className = 'far fa-eye-slash';
+            }
+        }
+    </script>
+</body>
+</html>

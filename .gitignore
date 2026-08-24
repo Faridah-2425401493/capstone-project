@@ -1,0 +1,21 @@
+.env
+*node_modules
+public/build
+npm-debug.log
+.DS_Store
+Thumbs.db
+*.bak
+*core.sql
+*.lock
+/vendor
+# Storage and Uploads
+/storage/logs/*
+!/storage/logs/.gitkeep
+/public/storage/*
+!/public/storage/.gitkeep
+*~$stelCloud_System_Assessment_Report.docx*
+*stelCloud_System_Assessment_Report.docx*
+
+# Docker
+.docker/
+docker-compose.override.yml

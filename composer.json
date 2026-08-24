@@ -1,0 +1,9 @@
+{
+  "name": "csbc252/hostel-cloud",
+  "description": "Cloud-based hostel management and booking system",
+  "require": {
+    "php": "^8.1",
+    "aws/aws-sdk-php": "^3.393",
+    "phpmailer/phpmailer": "^7.1"
+  }
+}

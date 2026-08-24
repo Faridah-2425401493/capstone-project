@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glassmorphism Navbar */
+.navbar {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+[data-bs-theme="dark"] .navbar {
+  background: rgba(33, 37, 41, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-brand b {
+  background: linear-gradient(to right, #0d6efd, #6f42c1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+/* Premium Cards */
+.card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+[data-bs-theme="dark"] .card {
+  background: #2b3035;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+}
+[data-bs-theme="dark"] .card:hover {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+
+/* Micro Animations for Buttons */
+.btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 8px;
+}
+.btn:active {
+  transform: scale(0.96);
+}
+
+/* Carousel Tweaks */
+.carousel-item img {
+  height: 500px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+.carousel-caption {
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 20px;
+  bottom: 40px;
+  left: 10%;
+  right: 10%;
+}
+.carousel-caption h2 {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.carousel-caption p {
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+}
