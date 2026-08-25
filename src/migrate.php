@@ -53,17 +53,29 @@ function run_migrations(PDO $pdo): void {
             // Seed a hostel
             $adminId = $pdo->query("SELECT id FROM users WHERE role='system_admin' LIMIT 1")->fetchColumn();
             if ($adminId) {
-                $pdo->exec("INSERT INTO hostels (admin_id, name, location, description, total_floors) VALUES 
-                    ($adminId, 'Sunrise Elite Hostel', 'North Campus, Block A', 'Premium hostel with modern amenities.', 3)");
+                // Seed all hostels with images
+                $hostels = [
+                    ['Sunrise Elite Hostel', 'assets/images/sunrise_elite_hostel.jpg'],
+                    ['Legacy Hostel', 'assets/images/legacy_hostel.jpg'],
+                    ['Palace Hostel', 'assets/images/palace_hostel.jpg'],
+                    ['De-rio Hostel', 'assets/images/derio_hostel.jpg'],
+                    ['Delicious Hostel', 'assets/images/delicious_hostel.jpg'],
+                    ['Zack-B Hostel', 'assets/images/zack_b_hostel.jpg']
+                ];
+                
+                foreach ($hostels as $h) {
+                    $stmt = $pdo->prepare("INSERT INTO hostels (admin_id, name, location, description, total_floors, image_path) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$adminId, $h[0], 'Tesano', 'Premium hostel located at Tesano.', 3, $h[1]]);
+                }
                 
                 $hostelId = $pdo->query("SELECT id FROM hostels WHERE name='Sunrise Elite Hostel' LIMIT 1")->fetchColumn();
                 
                 if ($hostelId) {
-                    // Seed some rooms
-                    $pdo->exec("INSERT INTO rooms (hostel_id, room_number, floor_number, equipment, capacity, price, gender) VALUES 
-                        ($hostelId, '101', 1, 'Air Conditioner, Study Desk, Mini Fridge, Wardrobe', 2, 500.00, 'any')");
-                    $pdo->exec("INSERT INTO rooms (hostel_id, room_number, floor_number, equipment, capacity, price, gender) VALUES 
-                        ($hostelId, '102', 1, 'Fan, Study Desk, Wardrobe', 4, 300.00, 'any')");
+                    // Seed some rooms with interior images
+                    $pdo->exec("INSERT INTO rooms (hostel_id, room_number, floor_number, equipment, capacity, price, gender, image_path) VALUES 
+                        ($hostelId, '101', 1, 'Air Conditioner, Study Desk, Mini Fridge, Wardrobe', 2, 500.00, 'any', 'assets/images/interior_double.jpg')");
+                    $pdo->exec("INSERT INTO rooms (hostel_id, room_number, floor_number, equipment, capacity, price, gender, image_path) VALUES 
+                        ($hostelId, '102', 1, 'Fan, Study Desk, Wardrobe', 4, 300.00, 'any', 'assets/images/interior_quad.jpg')");
                 }
             }
             
