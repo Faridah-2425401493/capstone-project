@@ -32,7 +32,20 @@ function db(): PDO {
     return $pdo;
 }
 function e(?string $value): string { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
-function url(string $path=''): string { return rtrim(env('APP_URL',''), '/').'/'.ltrim($path,'/'); }
+function url(string $path=''): string { 
+    $baseUrl = env('APP_URL');
+    if (empty($baseUrl) || (isset($_SERVER['HTTP_HOST']) && str_contains($baseUrl, 'localhost') && !str_contains($_SERVER['HTTP_HOST'], 'localhost'))) {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'] . "://";
+        }
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+        if ($scriptDir === '/') $scriptDir = '';
+        $baseUrl = $protocol . $host . $scriptDir;
+    }
+    return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+}
 function redirect(string $path): never { header('Location: '.url($path)); exit; }
 function current_user(): ?array {
     if(!isset($_SESSION['user_id'])) return null;

@@ -22,7 +22,7 @@ if($u&&password_verify($_POST['password']??'',$u['password'])){session_regenerat
         .form-width { width: 80%; }
         @media (max-width: 576px) { .form-width { width: 100% !important; } }
         .bg-side {
-            background-image: url('https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80');
+            background-image: url('<?=url("assets/images/login-bg.jpg")?>');
             background-size: cover;
             background-position: center;
             position: relative;

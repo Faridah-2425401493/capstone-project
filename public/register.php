@@ -18,7 +18,7 @@ flash('success','Registration successful. Please log in.');redirect('login.php')
         .form-width { width: 80%; }
         @media (max-width: 576px) { .form-width { width: 100% !important; } }
         .bg-side {
-            background-image: url('https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80');
+            background-image: url('<?=url("assets/images/register-bg.jpg")?>');
             background-size: cover;
             background-position: center;
             position: relative;
